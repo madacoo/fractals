@@ -1,22 +1,47 @@
 
 class KochSnowflake {
     constructor(centroid, circumradius, theta) {
+        this.iteration = 0;
+
         this.curves = [];
         let [a, b, c] = equilateral(centroid, circumradius, theta);
         this.curves.push(new KochCurve(a, b));
         this.curves.push(new KochCurve(b, c));
         this.curves.push(new KochCurve(c, a));
+
+        this.iterationArr = [];
+        let iteration = [];
+        for (let i = 0; i < 3; i++) {
+            iteration.push(this.curves[i].points.slice())
+        }
+        this.iterationArr.push(iteration);
     }
 
-    iterate() {
-        for (let i = 0; i < this.curves.length; i++) {
-            this.curves[i].iterate();
+    grow() {
+        if (this.iteration < 8) this.iteration++;
+        while (this.iterationArr.length < this.iteration+1) {
+            let iteration = [];
+            for (let i = 0; i < this.curves.length; i++) {
+                this.curves[i].iterate();
+                iteration.push(this.curves[i].points.slice());
+            }
+            this.iterationArr.push(iteration);
         }
     }
 
+    wither() {
+        if (this.iteration > 0) this.iteration--;
+    }
+
     show() {
-        for (let i = 0; i < this.curves.length; i++) {
-            this.curves[i].show();
+        for (let i = 0; i < 3; i++) {
+            let points = this.iterationArr[this.iteration][i];
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.stroke();
         }
     }
 }
